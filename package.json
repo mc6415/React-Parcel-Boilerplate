@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "firebase": "4.8.0",
+    "ideal-postcodes": "^1.0.0",
     "moment": "^2.20.1",
     "react": "^16.2.0",
     "react-datepicker": "^1.0.4",

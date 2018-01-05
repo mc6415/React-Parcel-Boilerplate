@@ -1,36 +1,43 @@
 import React, {Component} from 'react';
 import { withRouter } from 'react-router';
 import { Header, Modal, Icon, Button, Form, Table, Label } from 'semantic-ui-react';
-import DatePicker from 'react-datepicker';
-import moment from 'moment';
-import Firebase from 'firebase';
 import fb from '../firebase';
 
-import 'react-datepicker/dist/react-datepicker.css';
-
-class Clients extends  Component{
-    constructor(props){
+class Clients extends  Component {
+    constructor(props) {
         super(props);
-        this.state = {showAddScreen: false, clientFirstName: '', clientSurname: '', clientEmail: '', clientDOB: '', clients: []}
+        this.state = {
+            showAddScreen: false,
+            clientFirstName: '',
+            clientSurname: '',
+            clientEmail: '',
+            clientDOB: '',
+            clients: []
+        }
     };
 
     componentWillMount = () => {
-        const clients = fb.database().ref('Clients');
-        const ClientsListCopy = [];
-        clients.on('value', (snap) => {
-            ClientsListCopy.length = 0;
-            for(const i in snap.val()){
-                ClientsListCopy.push({
-                    ref: i,
-                    client: snap.val()[i]
-                });
+        fb.auth().onAuthStateChanged((user) => {
+            if (user) {
+                const clients = fb.database().ref('Clients');
+                const ClientsListCopy = [];
+                clients.on('value', (snap) => {
+                    ClientsListCopy.length = 0;
+                    for (const i in snap.val()) {
+                        ClientsListCopy.push({
+                            ref: i,
+                            client: snap.val()[i]
+                        });
+                    }
+                    this.setState({clients: ClientsListCopy});
+                })
+            } else {
+                this.props.history.push("/");
             }
-
-            this.setState({clients: ClientsListCopy});
-
-            console.log(ClientsListCopy);
         })
-    }
+
+
+    };
 
     showModal = () => {
         this.setState({showAddScreen: true})
@@ -52,14 +59,18 @@ class Clients extends  Component{
             email: this.state.clientEmail
         };
 
-        fb.database().ref('Clients').push(newUser);
-
-        console.log(newUser);
-    }
+        fb.database().ref('Clients').push(newUser)
+            .then(this.closeModal);
+    };
 
     removeClient = (id) => {
         fb.database().ref(`Clients/${id}`).remove();
-    }
+    };
+
+    logOut = () => {
+        fb.auth().signOut();
+        this.props.history.push("/");
+    };
 
     render(){
 
@@ -71,16 +82,17 @@ class Clients extends  Component{
                     <Table.Cell>{n.client.email}</Table.Cell>
                     <Table.Cell>
                         <Button color="red" onClick={() => {this.removeClient(n.ref)}} inverted>Remove</Button>
-
+                        <Button color="blue" inverted onClick={() => {this.props.history.push('/Client/' + n.ref)}}> View </Button>
                     </Table.Cell>
                 </Table.Row>
             )
-        })
+        });
 
         return(
             <div>
                 <Header as="h1" inverted> Hello </Header>
                 <Button color="green" onClick={this.showModal}> Add Client </Button>
+                <Button color="red" onClick={this.logOut}> Logout </Button>
                 <Modal basic size='small' open={this.state.showAddScreen}>
                     <Header icon='add user' content="Add Client" />
                     <Modal.Content>
