@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "firebase": "4.8.0",
+    "iis": "^0.2.0",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "react-router": "^4.2.0",
