@@ -1,11 +1,17 @@
 import React, { Component } from 'react';
+import { withRouter } from 'react-router';
+import { Grid, Header } from 'semantic-ui-react';
 
-export default class Home extends  Component {
+class Home extends  Component {
     render(){
         return(
-            <div>
-                <h1>Hello World</h1>
-            </div>
+            <Grid centered>
+                <Grid.Row>
+                    <Header as="h1"> Hello World </Header>
+                </Grid.Row>
+            </Grid>
         )
     }
 }
+
+export default withRouter(Home);
