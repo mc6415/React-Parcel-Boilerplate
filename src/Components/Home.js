@@ -1,101 +1,60 @@
 import React, { Component } from 'react';
 import { withRouter } from 'react-router';
-import { Grid, Header, Segment, Icon, Button } from 'semantic-ui-react';
+import { Grid, Button, Icon, Header} from 'semantic-ui-react';
 import Firebase from 'firebase';
 import fb from '../firebase';
 
 class Home extends  Component {
     constructor(props){
         super(props);
-        this.state = {siteSettings: {}}
     }
 
     loginGoogle = () => {
         const provider = new Firebase.auth.GoogleAuthProvider();
-        fb.auth().signInWithPopup(provider)
-            .then(() => {
-                this.props.history.push('/profile');
-            });
-    };
+        fb.auth().signInWithPopup(provider).then(u => {
+            this.loginUser(u);
+        })
+    }
 
-    componentWillMount = () => {
-        fb.firestore().collection("site").doc("loginExample")
-            .onSnapshot(doc => {
-                if(doc.exists){
-                    this.setState({siteSettings: doc.data()})
+    loginUser = (u) => {
+        const user = u.user;
+        const newUser = {
+            id: user.uid,
+            name: user.displayName,
+            email: user.email,
+            roles: []
+        }
+
+        fb.firestore().collection("users").doc(user.uid).get()
+            .then(doc => {
+                if(!doc.exists){
+                    fb.firestore().collection("users").doc(user.uid).set(newUser).then(
+                        this.props.history.push('/Voting')
+                    )
                 } else {
-                    fb.firestore().collection("site").doc("loginExample").set({
-                        name: "loginExample"
-                    })
+                    this.props.history.push('/Voting')
                 }
             })
     }
 
-    loginFacebook = () => {
-        const provider = new Firebase.auth.FacebookAuthProvider();
-        fb.auth().signInWithPopup(provider)
-            .then(() => {
-                this.props.history.push('/profile');
-            });
-    };
-
-    loginGithub = () => {
-        const provider = new Firebase.auth.GithubAuthProvider();
-        fb.auth().signInWithPopup(provider)
-            .then(() => {
-                this.props.history.push('/profile');
-            });
-    };
-
-    loginAnon = () => {
-        fb.auth().signInAnonymously()
-            .then(() => {
-                this.props.history.push('/profile');
-            });
-    };
-
-    updateTitle = () => {
-        fb.firestore().collection("site").doc("loginExample").update({
-            name: "Firebase Example",
-            posts: ["Test", "Test2"],
-            address: {}
-        })
-    }
-
     render(){
         return(
-            <Grid divided centered>
-               <Grid.Row>
-                    <Header as="h1" icon inverted>
-                        <Icon name="user" inverted />
-                        <Header.Content>Welcome to {this.state.siteSettings.name}</Header.Content>
-                        <Header.Subheader>Please login with one of the options below</Header.Subheader>
+            <Grid centered>
+                <Grid.Row>
+                    <Header as="h2" icon inverted>
+                        <Icon name="tasks" />
+                        Voting App
+                        <Header.Subheader>
+                            Post and vote on a great many things.
+                        </Header.Subheader>
                     </Header>
-               </Grid.Row>
-               <Grid.Row>
-                    <Button icon labelPosition="left" color="green" inverted onClick={this.loginGoogle}>
+                </Grid.Row>
+                <Grid.Row>
+                    <Button icon inverted color="green" labelPosition="left" size="large" onClick={this.loginGoogle}>
                         <Icon name="google" />
-                        Login with Google
-                    </Button>
-                   <Button icon labelPosition="left" color="blue" inverted onClick={this.loginFacebook}>
-                       <Icon name="facebook" />
-                       Login with Facebook
-                   </Button>
-               </Grid.Row>
-                <Grid.Row>
-                    <Button icon labelPosition="left" color="purple" inverted onClick={this.loginGithub}>
-                        <Icon name="github" />
-                        Login with Github
-                    </Button>
-                    <Button icon labelPosition="left" color="grey" inverted onClick={this.loginAnon}>
-                        <Icon name="user" />
-                        Login anonymously
+                        Login With Google
                     </Button>
                 </Grid.Row>
-                <Grid.Row>
-                    <Button color="red" content="Update Title" onClick={this.updateTitle}/>
-                </Grid.Row>
-
             </Grid>
         )
     }
